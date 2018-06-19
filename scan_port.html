@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title></title>
+</head>
+<body>
+    
+    <form>
+    	<label for="target">target</label><br/>
+    	<input type="text" name="target" value=""/><br/>
+    	<label for="port">port</label><br/>
+    	<input type="text" name="port" value="80" /><br/>
+    	<p>80,81,8080</p><br/>
+    	<label for="timeout">timeout</label><br/>
+    	<input type="text" name="timeout" value="1000" /><br/>
+    	<label for="result">result</label><br/>
+    	<textarea id="result" name="result" rows="7" cols="50"></textarea><br/>
+    	<input type="button" value="scan" onclick="javascript:scan(this.form)"/><br/>
+    </form>
+
+    <script>
+    	var AttackAPI={
+    		version:'1',
+    		homepage:''
+    	};
+    	AttackAPI.Portscanner = {};
+    	AttackAPI.Portscanner.scanPort = function(callback,target,port,timeout){
+    		var timeout = (timeout == null)?100:timeout;  //判断timeout是否为空
+    		var img = new Image();
+    		
+    		img.onerror = function (){
+    		if(!img)return;
+    		img = undefined;
+    		callback(target,port,'open');
+    		};
+    		img.onload = img.onerror;
+    		img.src = 'http://' + target + ':' + port;
+    		setTimeout(function () {
+    		if(!img)return;
+    		img = undefined;
+    		callback(target,port,'closed');
+    		},timeout);
+    	};
+    	AttackAPI.Portscanner.scanTarget  = function (callback,target,ports,timeout){
+    		for(indext=0;indext < ports.length;indext++)
+    		AttackAPI.Portscanner.scanPort(callback,target,ports[indext],timeout);
+    		
+    	};
+    </script>
+    <script>
+    	var result = document.getElementById('result');
+    	var callback = function (target,port,status) {
+    		result.value += target + ':' +  port + ' ' + status + "\n";
+    	};
+    	var scan = function (form){
+    		AttackAPI.Portscanner.scanTarget(callback,form.target.value,form.port.value.split(','),form.timeout.value)
+    	};
+    </script>
+</body>
+</html>
